@@ -28,7 +28,9 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::AttachComponent<HorizontalScroll>(entity);
 		ECS::AttachComponent<VerticalScroll>(entity);
 
-		vec4 temp = vec4(-75.f, 75.f, -75.f, 75.f);
+		float tempValues = 70.f; //DEFAULT IS 75.f
+
+		vec4 temp = vec4(-tempValues, tempValues, -tempValues, tempValues);
 		ECS::GetComponent<Camera>(entity).SetOrthoSize(temp);
 		ECS::GetComponent<Camera>(entity).SetWindowSize(vec2(float(windowWidth), float(windowHeight)));
 		ECS::GetComponent<Camera>(entity).Orthographic(aspectRatio, temp.x, temp.y, temp.z, temp.w, -100.f, 100.f);
@@ -127,7 +129,6 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
-
 	//Setup static Top Platform
 	{
 		//Creates entity
@@ -161,6 +162,200 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
+	//Setup static Roof Platform
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		//Sets up components
+		std::string fileName = "GraySquare.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 250, 10);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 2.f));
+
+		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		float shrinkX = 0.f;
+		float shrinkY = 0.f;
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(0.f), float32(110.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX),
+			float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, GROUND, PLAYER | ENEMY | OBJECTS | HEXAGON);
+		tempPhsBody.SetColor(vec4(0.f, 1.f, 0.f, 0.3f));
+
+	}
+
+	//Setup static tunnel Background
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+
+		//Sets up components
+		std::string fileName = "DarkGraySquare.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 300, 120);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 50.f, 5.f));
+
+	}
+
+	//Setup static Background
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+
+		//Sets up components
+		std::string fileName = "PlaceHolderSpace.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 500);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 50.f, 1.f));
+
+	}
+
+	//Setup static Background floor
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+
+		//Sets up components
+		std::string fileName = "PlaceHolderMoon.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 500);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -200.f, 2.f));
+
+	}
+
+	for (int i = 0; i < 15; i++)
+	{
+		//setup floor path
+		{
+			//Creates entity
+			auto entity = ECS::CreateEntity();
+
+			//Add components
+			ECS::AttachComponent<Sprite>(entity);
+			ECS::AttachComponent<Transform>(entity);
+
+			//Sets up components
+
+			double tileSizing = 0.2;
+
+			std::string fileName = "ARandomTile.png";
+			ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
+			ECS::GetComponent<Transform>(entity).SetPosition(vec3(-128.f + (i * 25), -7.f, 10.f));
+
+		}
+
+		//setup roof path
+		{
+			//Creates entity
+			auto entity = ECS::CreateEntity();
+
+			//Add components
+			ECS::AttachComponent<Sprite>(entity);
+			ECS::AttachComponent<Transform>(entity);
+
+			//Sets up components
+
+			double tileSizing = 0.2;
+
+			std::string fileName = "ARandomTile.png";
+			ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
+			ECS::GetComponent<Transform>(entity).SetPosition(vec3(-128.f + (i * 25), 117.f, 10.f));
+
+		}
+	}
+
+	//Setup canister
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		//Sets up components
+		std::string fileName = "RandomAlienTileSets2.png";
+
+		double canisterSize = 0.2;
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, (128 * canisterSize), (128 * canisterSize));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 20.f));
+
+		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		float shrinkX = 0.f;
+		float shrinkY = 0.f;
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(50.f), float32(18.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX),
+			float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, GROUND, PLAYER | ENEMY | OBJECTS | HEXAGON);
+		tempPhsBody.SetColor(vec4(0.f, 1.f, 0.f, 0.3f));
+
+	}
+
+	//
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		//Sets up components
+		std::string fileName = "RandomAlienTileSets2.png";
+
+		double canisterSize = 0.2;
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, (128 * canisterSize), (128 * canisterSize));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 20.f));
+
+		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		float shrinkX = 0.f;
+		float shrinkY = 0.f;
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(100.f), float32(18.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX),
+			float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, GROUND, PLAYER | ENEMY | OBJECTS | HEXAGON);
+		tempPhsBody.SetColor(vec4(0.f, 1.f, 0.f, 0.3f));
+
+	}
+
 
 	//Binding scrolling to mainPlayer KEEP THESE AT THE VERY BOTTOM OF INITSCENE
 	ECS::GetComponent<HorizontalScroll>(MainEntities::MainCamera()).SetFocus(&ECS::GetComponent<Transform>(MainEntities::MainPlayer()));
@@ -180,11 +375,11 @@ void InfiniteRunner::KeyboardHold(){
 
 	if (Input::GetKey(Key::A))
 	{
-		player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
+	//	player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
 	}
 	if (Input::GetKey(Key::D))
 	{
-		player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
+		//player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
 	}
 }
 
@@ -203,11 +398,26 @@ void InfiniteRunner::KeyboardDown(){
 			canJump.m_canJump = false;
 		}
 	}
+	
+	std::cout << "Player Y location: " << player.GetPosition().y;
+
 }
 
 void InfiniteRunner::KeyboardUp(){
 
 	auto& canJump = ECS::GetComponent<CanJump>(MainEntities::MainPlayer());
+	auto& player = ECS::GetComponent<PhysicsBody>(MainEntities::MainPlayer());
+
+
+	//Double jump mode
+	if (player.GetPosition().y < 28 && canJump.m_canJump == false)
+	{
+
+		canJump.m_canJump = true;
+
+	}
+
+
 
 /* Flappy bird mode
 	if (!canJump.m_canJump)
