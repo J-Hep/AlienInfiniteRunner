@@ -3,12 +3,14 @@
 #include "timer.h"
 
 int tilesFor = 32;
+int canisterFor = 4;
 
 InfiniteRunner::InfiniteRunner(std::string name) :Scene(name)
 {
 	//Gravity
 	m_gravity = b2Vec2(0.f, -98.f);
 	m_physicsWorld->SetGravity(m_gravity);
+
 }
 
 void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
@@ -74,8 +76,8 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
-		//tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
-		tempPhsBody = PhysicsBody(entity, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.f), vec2(0.f, 0.f), false, PLAYER, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
+		//tempPhsBody = PhysicsBody(entity, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.f), vec2(0.f, 0.f), false, PLAYER, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
 		//std::vector<b2Vec2> points = {b2Vec2(-tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(0.f, tempSpr.GetHeight()/2.f)};
 		//tempPhsBody = PhysicsBody(entity, BodyType::TRIANGLE, tempBody, points, vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
 
@@ -104,7 +106,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		double alienScale = 0.75;
 		ECS::GetComponent<Sprite>(alienBoss).LoadSprite(fileName, 128 * alienScale, 128 * alienScale);
 
-		ECS::GetComponent<Transform>(alienBoss).SetPosition(vec3(0.f, 0.f, 10.f));
+		ECS::GetComponent<Transform>(alienBoss).SetPosition(vec3(0.f, 0.f, 25.f));
 
 		auto& tempSpr = ECS::GetComponent<Sprite>(alienBoss);
 		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(alienBoss);
@@ -119,8 +121,11 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
-		//tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
-		tempPhsBody = PhysicsBody(alienBoss, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.25f), vec2(0.f, 0.f), false, ENEMY, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
+		//Square collison for alien
+		tempPhsBody = PhysicsBody(alienBoss, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, ENEMY, GROUND|PLAYER|/*ENEMY | OBJECTS | PICKUP |*/ TRIGGER, 0.5f, 3.f);
+
+
+		//tempPhsBody = PhysicsBody(alienBoss, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.25f), vec2(0.f, 0.f), false, ENEMY, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
 		//std::vector<b2Vec2> points = {b2Vec2(-tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(0.f, tempSpr.GetHeight()/2.f)};
 		//tempPhsBody = PhysicsBody(entity, BodyType::TRIANGLE, tempBody, points, vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
 
@@ -248,6 +253,42 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
+	//TRIGGER TEST
+	//Creates entity
+	auto entity = ECS::CreateEntity();
+
+
+	//Add components
+	ECS::AttachComponent<Sprite>(entity);
+	ECS::AttachComponent<Transform>(entity);
+	ECS::AttachComponent<PhysicsBody>(entity);
+	ECS::AttachComponent<Trigger*>(entity);
+
+	//Sets up components
+	std::string fileName = "BeachBall.png";
+	ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 15, 150);
+
+	ECS::GetComponent<Sprite>(entity).SetTransparency(0);
+
+	ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 80.f));
+	ECS::GetComponent<Trigger*>(entity) = new Trigger();
+	ECS::GetComponent<Trigger*>(entity)->SetTriggerEntity((MainEntities::MainPlayer()));
+	ECS::GetComponent<Trigger*>(entity)->AddTargetEntity(MainEntities::MainPlayer());
+
+	auto& tempSpr = ECS::GetComponent<Sprite>(entity);
+	auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+	float shrinkX = 0.f;
+	float shrinkY = 0.f;
+	b2Body* tempBody;
+	b2BodyDef tempDef;
+	tempDef.type = b2_staticBody;
+	tempDef.position.Set(float32(-60.f), float32(80.f));
+
+	tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+	tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), true, TRIGGER, PLAYER);
+	tempPhsBody.SetColor(vec4(1.f, 0.f, 0.f, 0.3f));
 
 	for (int i = 0; i < tilesFor; i++)
 	{
@@ -290,7 +331,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		}
 	}
 
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < canisterFor; i++) {
 
 		//Setup canister
 		{
@@ -323,7 +364,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 			tempBody = m_physicsWorld->CreateBody(&tempDef);
 
 			tempPhsBody = PhysicsBody(canisters[i], tempBody, float(tempSpr.GetWidth() - shrinkX),
-				float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, GROUND, PLAYER | /*ENEMY |*/ OBJECTS | HEXAGON);
+				float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, OBJECTS, PLAYER | /*ENEMY |*/ OBJECTS | HEXAGON);
 			tempPhsBody.SetColor(vec4(0.f, 1.f, 0.f, 0.3f));
 
 		}
@@ -341,12 +382,18 @@ void InfiniteRunner::Update(){
 	int setBackDistance = -215; //Adjusdt these to line up tiles -0.25f
 	int reAppearDistance = 250; //adjust these to line up tiles
 
-	for (int i = 0; i < 16; i++) {
-		auto& cani = ECS::GetComponent<PhysicsBody>(canisters[i]);
-		cani.SetPosition(b2Vec2(cani.GetPosition().x + canisterSpeed, cani.GetPosition().y));
+	for (int i = 0; i < canisterFor; i++) {
+		auto& caniPhyBody = ECS::GetComponent<PhysicsBody>(canisters[i]);
+		auto& caniSprite = ECS::GetComponent<Sprite>(canisters[i]);
 
-		if (cani.GetPosition().x < setBackDistance) {
-			cani.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, cani.GetPosition().y));
+		caniPhyBody.SetPosition(b2Vec2(caniPhyBody.GetPosition().x + canisterSpeed, caniPhyBody.GetPosition().y));
+
+		if (caniPhyBody.GetPosition().x < setBackDistance) {
+
+			//Position based
+			caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 150 + 18));
+			
+
 		}
 	}
 
@@ -372,7 +419,8 @@ void InfiniteRunner::Update(){
 
 	}
 
-	std::cout<<"Delta: "<<Timer::currentClock<<std::endl;
+	//std::cout<<"Delta: "<<Timer::currentClock<<std::endl;
+	std::cout << "Time: " << Timer::time << std::endl;
 	
 
 }
@@ -383,6 +431,9 @@ void InfiniteRunner::KeyboardHold(){
 
 	float speed = 1.f;
 	b2Vec2 vel = b2Vec2(0.f, 0.f);
+
+
+
 
 	if (Input::GetKey(Key::A))
 	{
@@ -403,11 +454,19 @@ void InfiniteRunner::KeyboardDown(){
 	double jumpCalc = player.GetMass() * 98.f;
 	double jumpCalcAlien = alienRef.GetMass() * 98.f;
 
+	if (Input::GetKeyDown(Key::S))
+	{
+		
+	}
+
 
 	if (canJump.m_canJump)
 	{
 		if (Input::GetKeyDown(Key::Space))
 		{
+
+			Timer::Reset();
+
 			player.GetBody()->ApplyLinearImpulseToCenter(b2Vec2(0.f, jumpCalc), true);
 
 			//To allow alien to jump
@@ -424,11 +483,11 @@ void InfiniteRunner::KeyboardUp(){
 
 	auto& canJump = ECS::GetComponent<CanJump>(MainEntities::MainPlayer());
 	auto& player = ECS::GetComponent<PhysicsBody>(MainEntities::MainPlayer());
-
+	
 
 
 	//Double jump mode
-	if (player.GetPosition().y < 28 && canJump.m_canJump == false)
+	if (player.GetPosition().y < 28 && canJump.m_canJump == false || Timer::time > 2.f)
 	{
 
 		canJump.m_canJump = true;

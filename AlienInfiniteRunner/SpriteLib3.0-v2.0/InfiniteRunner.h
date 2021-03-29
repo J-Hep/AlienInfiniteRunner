@@ -19,8 +19,10 @@ public:
 
 protected:
 	int alienBoss;
+	int loseStateCollision;
 	int canisters[64];
 	int roofTiles[64];
 	int floorTiles[64];
+
 
 };
