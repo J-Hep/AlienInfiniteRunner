@@ -5,6 +5,7 @@
 
 int tilesFor = 35;
 int canisterFor = 4;
+bool gameOverState = false;
 
 InfiniteRunner::InfiniteRunner(std::string name) :Scene(name)
 {
@@ -77,7 +78,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
-		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, PLAYER, /*ENEMY |*/GROUND| OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
 		//tempPhsBody = PhysicsBody(entity, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.f), vec2(0.f, 0.f), false, PLAYER, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
 		//std::vector<b2Vec2> points = {b2Vec2(-tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(tempSpr.GetWidth()/2.f, -tempSpr.GetHeight()/2.f), b2Vec2(0.f, tempSpr.GetHeight()/2.f)};
 		//tempPhsBody = PhysicsBody(entity, BodyType::TRIANGLE, tempBody, points, vec2(0.f, 0.f), false, PLAYER, ENEMY | OBJECTS | PICKUP | TRIGGER, 0.5f, 3.f);
@@ -123,7 +124,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
 		//Square collison for alien
-		tempPhsBody = PhysicsBody(alienBoss, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, ENEMY, GROUND|PLAYER|/*ENEMY | OBJECTS | PICKUP |*/ TRIGGER, 0.5f, 3.f);
+		tempPhsBody = PhysicsBody(alienBoss, tempBody, float(tempSpr.GetWidth() - shrinkX), float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, ENEMY, GROUND/*PLAYER|ENEMY | OBJECTS | PICKUP | TRIGGER*/, 0.5f, 3.f);
 
 
 		//tempPhsBody = PhysicsBody(alienBoss, tempBody, float((tempSpr.GetHeight() - shrinkY) / 2.25f), vec2(0.f, 0.f), false, ENEMY, ENVIRONMENT | ENEMY | OBJECTS | PICKUP | TRIGGER | HEXAGON, 0.5f, 3.f);
@@ -310,6 +311,24 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
+	//Setup game over screen
+	{
+		//Creates entity
+		 gameoverScreen = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(gameoverScreen);
+		ECS::AttachComponent<Transform>(gameoverScreen);
+
+		//Sets up components
+		std::string fileName = "GameOverScreen2.png";
+		ECS::GetComponent<Sprite>(gameoverScreen).LoadSprite(fileName, (128*10)/3, (128 * 5)/3);
+		ECS::GetComponent<Transform>(gameoverScreen).SetPosition(vec3(0.f, 25.f, 100.f));
+
+		ECS::GetComponent<Sprite>(gameoverScreen).SetTransparency(0);
+
+	}
+
 	//TRIGGER TEST
 	//Creates entity
 	auto entity = ECS::CreateEntity();
@@ -446,6 +465,11 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 void InfiniteRunner::Update(){
 	
+	auto& player = ECS::GetComponent<PhysicsBody>(MainEntities::MainPlayer());
+	auto& gameOverSplash = ECS::GetComponent<Sprite>(gameoverScreen);
+	auto& gameOverTransform = ECS::GetComponent<Transform>(gameoverScreen);
+
+
 	float canisterSpeed = -0.75f; //default -0.25f?
 	float backgroundSpeed = -0.5;
 
@@ -467,8 +491,8 @@ void InfiniteRunner::Update(){
 
 		if (caniPhyBody.GetPosition().x < setBackDistance) {
 
-			//Position based
-			caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 150 + 18));
+			//Random position based
+			//caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 130 + 18));
 			
 
 		}
@@ -505,6 +529,29 @@ void InfiniteRunner::Update(){
 		}
 		
 	}
+
+
+	//Check if player is in kill zone / gameover area
+	if (player.GetPosition().x < -60) {
+		gameOverState = true;
+	}
+	else {
+		gameOverState = false;
+	}
+
+	if (gameOverState == true) {
+
+		gameOverSplash.SetTransparency(1);
+
+		gameOverTransform.SetPosition(vec3(player.GetPosition().x, player.GetPosition().y,100.f));
+	}
+
+	if (gameOverState == false) {
+		gameOverSplash.SetTransparency(0);
+	}
+
+
+
 	//std::cout<<"Delta: "<<Timer::currentClock<<std::endl;
 	//std::cout << "Time: " << Timer::time << std::endl;
 	
@@ -540,16 +587,16 @@ void InfiniteRunner::KeyboardDown(){
 	double jumpCalc = player.GetMass() * 98.f;
 	double jumpCalcAlien = alienRef.GetMass() * 98.f;
 
-	if (Input::GetKeyDown(Key::S))
+	if (Input::GetKeyDown(Key::R) && gameOverState == true)
 	{
-	//	Game::ChangeScene(m_sceneReg[1]);
+		player.SetPosition(b2Vec2(0,35));
 
 	}
 
 
 	if (canJump.m_canJump)
 	{
-		if (Input::GetKeyDown(Key::Space))
+		if (Input::GetKeyDown(Key::Space) || Input::GetKeyDown(Key::W) || Input::GetKeyDown(Key::UpArrow))
 		{
 
 			Timer::Reset();
@@ -559,7 +606,8 @@ void InfiniteRunner::KeyboardDown(){
 
 			//To allow alien to jump
 			//alienRef.GetBody()->ApplyLinearImpulseToCenter(b2Vec2(0.f, jumpCalcAlien), true);
-			//canJump.m_canJump = false;
+
+			canJump.m_canJump = false;
 		}
 	}
 	
@@ -572,26 +620,33 @@ void InfiniteRunner::KeyboardUp(){
 	auto& canJump = ECS::GetComponent<CanJump>(MainEntities::MainPlayer());
 	auto& player = ECS::GetComponent<PhysicsBody>(MainEntities::MainPlayer());
 	
-
-
-	//Double jump mode
-	//if (player.GetPosition().y < 28 && canJump.m_canJump == false || Timer::time > 2.f)
-	//{
+	//Single jump mode
+	//if (Timer::time > 1.f)
+	{
 
 	//	canJump.m_canJump = true;
 
-	//}
+	}
+
+
+	//Double jump mode
+	if (player.GetPosition().y < 28 && canJump.m_canJump == false || Timer::time > 2.f)
+	{
+
+		canJump.m_canJump = true;
+
+	}
 
 
 
- 
-	if (!canJump.m_canJump)
+//flaappy bird mode
+/*	if (!canJump.m_canJump)
 	{
 		if (Input::GetKeyDown(Key::Space))
 		{
 			canJump.m_canJump = true;
 		}
-	}
+	}*/
 	
 
 }
