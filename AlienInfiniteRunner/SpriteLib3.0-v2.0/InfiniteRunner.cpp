@@ -1,8 +1,9 @@
 #include "InfiniteRunner.h"
 #include "Utilities.h"
 #include "timer.h"
+#include"game.h"
 
-int tilesFor = 32;
+int tilesFor = 35;
 int canisterFor = 4;
 
 InfiniteRunner::InfiniteRunner(std::string name) :Scene(name)
@@ -58,7 +59,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		//Set up components
 		std::string fileName = "Astro128.png";
 
-		double astroScale = 0.35;
+		double astroScale = 0.25; //Default is 0.35?
 		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 128 * astroScale, 128 * astroScale);
 
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 10.f));
@@ -153,6 +154,8 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 10);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 2.f));
 
+		ECS::GetComponent<Sprite>(entity).SetTransparency(0);
+
 		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
 		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
 
@@ -171,6 +174,22 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
+	//Setup gap filler floor
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+
+		//Sets up components
+		std::string fileName = "Soil.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 128*0.2);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -7.f, 6.f));
+	}
+
+
 	//Setup static Roof Platform
 	{
 		//Creates entity
@@ -185,6 +204,8 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		std::string fileName = "GraySquare.png";
 		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 10);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 2.f));
+
+		ECS::GetComponent<Sprite>(entity).SetTransparency(0);
 
 		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
 		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
@@ -204,7 +225,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
-	//Setup static tunnel Background
+	//Setup gap filler roof
 	{
 		//Creates entity
 		auto entity = ECS::CreateEntity();
@@ -214,10 +235,46 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::AttachComponent<Transform>(entity);
 
 		//Sets up components
-		std::string fileName = "DarkGraySquare.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 175);
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 75.f, 5.f));
+		std::string fileName = "Soil.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 128 * 0.2);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 165.f, 6.f));
+	}
 
+	//Setup static tunnel Background
+	{
+		//Creates entity
+		backgroundTile[0] = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(backgroundTile[0]);
+		ECS::AttachComponent<Transform>(backgroundTile[0]);
+
+		//Sets up components
+		std::string fileName = "BackgroundTunnel1.png";
+		ECS::GetComponent<Sprite>(backgroundTile[0]).LoadSprite(fileName, 1000, 175);
+
+		ECS::GetComponent<Sprite>(backgroundTile[0]).SetTransparency(1);
+
+		ECS::GetComponent<Transform>(backgroundTile[0]).SetPosition(vec3(0.f, 75.f, 5.f));
+
+	}
+
+	{
+		//Creates entity
+		backgroundTile[1] = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(backgroundTile[1]);
+		ECS::AttachComponent<Transform>(backgroundTile[1]);
+
+		//Sets up components
+		std::string fileName = "BackgroundTunnel1.png";
+		ECS::GetComponent<Sprite>(backgroundTile[1]).LoadSprite(fileName, 1000, 175);
+
+		ECS::GetComponent<Sprite>(backgroundTile[1]).SetTransparency(1);
+
+		ECS::GetComponent<Transform>(backgroundTile[1]).SetPosition(vec3(1000.f, 75.f, 5.f));
+		
 	}
 
 
@@ -232,7 +289,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 		//Sets up components
 		std::string fileName = "PlaceHolderSpace.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 500);
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 1000, 1000);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 50.f, 1.f));
 
 	}
@@ -248,8 +305,8 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 		//Sets up components
 		std::string fileName = "PlaceHolderMoon.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 500);
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -200.f, 2.f));
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 1000, 1000);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -350.f, 2.f));
 
 	}
 
@@ -302,10 +359,16 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 			ECS::AttachComponent<Transform>(floorTiles[i]);
 
 			//Sets up components
+			int randomTiling = rand() % 10;
 
 			double tileSizing = 0.2;
 
-			std::string fileName = "ARandomTile.png";
+			std::string fileName = "Soil.png";
+
+			if (randomTiling > 5) {
+			 fileName = "EnrichedSoil.png";
+			}
+
 			ECS::GetComponent<Sprite>(floorTiles[i]).LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
 			ECS::GetComponent<Transform>(floorTiles[i]).SetPosition(vec3(-187.f + (i * 25), -7.f, 10.f));
 
@@ -323,8 +386,14 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 			//Sets up components
 
 			double tileSizing = 0.2;
+			int randomTiling = rand() % 10;
 
-			std::string fileName = "ARandomTile.png";
+			std::string fileName = "Soil.png";
+
+			if (randomTiling > 5) {
+				fileName = "EnrichedSoil.png";
+			}
+
 			ECS::GetComponent<Sprite>(roofTiles[i]).LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
 			ECS::GetComponent<Transform>(roofTiles[i]).SetPosition(vec3(-187.f + (i * 25), 165.f, 10.f));
 
@@ -378,13 +447,21 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 void InfiniteRunner::Update(){
 	
 	float canisterSpeed = -0.75f; //default -0.25f?
+	float backgroundSpeed = -0.5;
 
-	int setBackDistance = -215; //Adjusdt these to line up tiles -0.25f
-	int reAppearDistance = 250; //adjust these to line up tiles
+	int setBackBackground = -1000;
+	int reAppearBack = 1000;
 
+	int setBackDistance = -300; //Adjusdt these to line up tiles -0.25f
+	int reAppearDistance = 575; //adjust these to line up tiles
+
+	
+
+	//Random positioning of canisters
 	for (int i = 0; i < canisterFor; i++) {
 		auto& caniPhyBody = ECS::GetComponent<PhysicsBody>(canisters[i]);
 		auto& caniSprite = ECS::GetComponent<Sprite>(canisters[i]);
+		
 
 		caniPhyBody.SetPosition(b2Vec2(caniPhyBody.GetPosition().x + canisterSpeed, caniPhyBody.GetPosition().y));
 
@@ -419,8 +496,17 @@ void InfiniteRunner::Update(){
 
 	}
 
+	for (int i = 0; i < 2; i++) {
+		auto& backgroundSprite = ECS::GetComponent<Transform>(backgroundTile[i]);
+		backgroundSprite.SetPosition(vec3(backgroundSprite.GetPosition().x + backgroundSpeed, backgroundSprite.GetPosition().y, 5.f));
+
+		if (backgroundSprite.GetPositionX() < setBackBackground) {
+			backgroundSprite.SetPosition(vec3(reAppearBack + backgroundSpeed, backgroundSprite.GetPosition().y, 10.f));
+		}
+		
+	}
 	//std::cout<<"Delta: "<<Timer::currentClock<<std::endl;
-	std::cout << "Time: " << Timer::time << std::endl;
+	//std::cout << "Time: " << Timer::time << std::endl;
 	
 
 }
@@ -437,11 +523,11 @@ void InfiniteRunner::KeyboardHold(){
 
 	if (Input::GetKey(Key::A))
 	{
-	//	player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
+		player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
 	}
 	if (Input::GetKey(Key::D))
 	{
-		//player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
+		player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
 	}
 }
 
@@ -456,7 +542,8 @@ void InfiniteRunner::KeyboardDown(){
 
 	if (Input::GetKeyDown(Key::S))
 	{
-		
+	//	Game::ChangeScene(m_sceneReg[1]);
+
 	}
 
 
@@ -467,11 +554,12 @@ void InfiniteRunner::KeyboardDown(){
 
 			Timer::Reset();
 
+
 			player.GetBody()->ApplyLinearImpulseToCenter(b2Vec2(0.f, jumpCalc), true);
 
 			//To allow alien to jump
 			//alienRef.GetBody()->ApplyLinearImpulseToCenter(b2Vec2(0.f, jumpCalcAlien), true);
-			canJump.m_canJump = false;
+			//canJump.m_canJump = false;
 		}
 	}
 	
@@ -487,16 +575,16 @@ void InfiniteRunner::KeyboardUp(){
 
 
 	//Double jump mode
-	if (player.GetPosition().y < 28 && canJump.m_canJump == false || Timer::time > 2.f)
-	{
+	//if (player.GetPosition().y < 28 && canJump.m_canJump == false || Timer::time > 2.f)
+	//{
 
-		canJump.m_canJump = true;
+	//	canJump.m_canJump = true;
 
-	}
+	//}
 
 
 
-/* Flappy bird mode
+ 
 	if (!canJump.m_canJump)
 	{
 		if (Input::GetKeyDown(Key::Space))
@@ -505,5 +593,5 @@ void InfiniteRunner::KeyboardUp(){
 		}
 	}
 	
-*/
+
 }

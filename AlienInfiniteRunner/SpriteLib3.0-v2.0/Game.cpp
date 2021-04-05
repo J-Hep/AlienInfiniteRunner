@@ -292,3 +292,9 @@ void Game::MouseWheel(SDL_MouseWheelEvent evnt)
 	//Resets the enabled flag
 	m_wheel = false;
 }
+
+void Game::ChangeScene(Scene* aScene) {
+
+	m_activeScene = aScene;
+
+}

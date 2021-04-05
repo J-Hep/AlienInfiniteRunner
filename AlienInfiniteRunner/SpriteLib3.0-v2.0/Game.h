@@ -63,6 +63,11 @@ public:
 	void MouseMotion(SDL_MouseMotionEvent evnt);
 	void MouseClick(SDL_MouseButtonEvent evnt);
 	void MouseWheel(SDL_MouseWheelEvent evnt);
+
+	//Change scene?
+	void ChangeScene(Scene* aScene);
+
+
 private:
 	//The window
 	Window *m_window = nullptr;

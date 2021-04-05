@@ -23,6 +23,6 @@ protected:
 	int canisters[64];
 	int roofTiles[64];
 	int floorTiles[64];
-
+	int backgroundTile[1];
 
 };
