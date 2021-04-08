@@ -6,6 +6,7 @@
 int tilesFor = 35;
 int canisterFor = 4;
 bool gameOverState = false;
+bool effectToggle = true;
 
 InfiniteRunner::InfiniteRunner(std::string name) :Scene(name)
 {
@@ -142,6 +143,21 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		tempPhsBody.SetGravityScale(1.f);
 
 
+	}
+
+	//Setup Alien Trail
+	{
+		//Creates entity
+		gapFillerOne = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(gapFillerOne);
+		ECS::AttachComponent<Transform>(gapFillerOne);
+
+		//Sets up components
+		std::string fileName = "GreenSquare.png";
+		ECS::GetComponent<Sprite>(gapFillerOne).LoadSprite(fileName, 256, 2);
+		ECS::GetComponent<Transform>(gapFillerOne).SetPosition(vec3(-255.f, 5.75f, 6.f));
 	}
 
 
@@ -359,6 +375,24 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::GetComponent<Transform>(gameoverScreen).SetPosition(vec3(0.f, 25.f, 100.f));
 
 		ECS::GetComponent<Sprite>(gameoverScreen).SetTransparency(0);
+
+	}
+
+	//Setup game over screen
+	{
+		//Creates entity
+		 screenEffect = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(screenEffect);
+		ECS::AttachComponent<Transform>(screenEffect);
+
+		//Sets up components
+		std::string fileName = "ScreenEffect6.png";
+		ECS::GetComponent<Sprite>(screenEffect).LoadSprite(fileName, (128 * 10) / 2, (128 * 5) / 2);
+		ECS::GetComponent<Transform>(screenEffect).SetPosition(vec3(0.f, 75.f, 100.f));
+
+		ECS::GetComponent<Sprite>(screenEffect).SetTransparency(0);
 
 	}
 
@@ -605,11 +639,11 @@ void InfiniteRunner::KeyboardHold(){
 
 	if (Input::GetKey(Key::A))
 	{
-		player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
+		//player.GetBody()->ApplyForceToCenter(b2Vec2(-400000.f * speed, 0.f), true);
 	}
 	if (Input::GetKey(Key::D))
 	{
-		player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
+		//player.GetBody()->ApplyForceToCenter(b2Vec2(400000.f * speed, 0.f), true);
 	}
 }
 
@@ -770,6 +804,17 @@ void InfiniteRunner::KeyboardDown(){
 		}
 	}
 	
+	if (Input::GetKeyDown(Key::O)) {
+		ECS::GetComponent<Sprite>(screenEffect).SetTransparency(0.05);
+		if (effectToggle == false) {
+			ECS::GetComponent<Sprite>(screenEffect).SetTransparency(0);
+			effectToggle = true;
+		}
+		else {
+			effectToggle = false;
+		}
+		//effectToggle = false;
+	}
 	//std::cout << "Player Y location: " << player.GetPosition().y;
 
 }
