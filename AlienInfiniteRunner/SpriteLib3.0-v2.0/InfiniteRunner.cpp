@@ -316,6 +316,34 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}*/
 
+	{
+		//Creates background blending outof bounds
+		boundFillerBot = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(boundFillerBot);
+		ECS::AttachComponent<Transform>(boundFillerBot);
+
+		//Sets up components
+		std::string fileName = "CaveShadingBot.png";
+		ECS::GetComponent<Sprite>(boundFillerBot).LoadSprite(fileName, 1280, 384);
+		ECS::GetComponent<Transform>(boundFillerBot).SetPosition(vec3(0.f, -200.f, 5.f));
+	}
+
+	{
+		//Creates background blending outof bounds
+		boundFillerTop = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(boundFillerTop);
+		ECS::AttachComponent<Transform>(boundFillerTop);
+
+		//Sets up components
+		std::string fileName = "CaveShadingTop.png";
+		ECS::GetComponent<Sprite>(boundFillerTop).LoadSprite(fileName, 1280, 384);
+		ECS::GetComponent<Transform>(boundFillerTop).SetPosition(vec3(0.f, 350.f, 5.f));
+	}
+
 	//Setup game over screen
 	{
 		//Creates entity
@@ -661,27 +689,44 @@ void InfiniteRunner::KeyboardDown(){
 			auto& backgroundToChange = ECS::GetComponent<Sprite>(backgroundTile[i]);
 			auto& fillerToChangeOne = ECS::GetComponent<Sprite>(gapFillerOne);
 			auto& fillerToChangeTwo = ECS::GetComponent<Sprite>(gapFillerTwo);
+			auto& boundToChangeBot = ECS::GetComponent<Sprite>(boundFillerBot);
+			auto& boundToChangeTop = ECS::GetComponent<Sprite>(boundFillerTop);
 
 			std::string fileName = "BackgroundTunnel1.png";
 			std::string gapFillerFilename = "Soil.png";
+			std::string boundFilenameTop = "CaveShadingTop.png";
+			std::string boundFilenameBot = "CaveShadingBot.png";
 
 			if (Tilerandomizer < 10) {
 				fillerToChangeTwo.SetTransparency(1);
+				boundToChangeTop.SetTransparency(1);
 				fileName = "BackgroundTunnel1.png";
 				gapFillerFilename = "Soil.png";
+
+				 boundFilenameTop = "CaveShadingTop.png";
+				 boundFilenameBot = "CaveShadingBot.png";
 
 			}
 
 			if (Tilerandomizer > 10 && Tilerandomizer < 20) {
 				fillerToChangeTwo.SetTransparency(1);
+				boundToChangeTop.SetTransparency(1);
 				fileName = "CorridorBackground.png";
 				gapFillerFilename = "ARandomTile.png";
+
+				boundFilenameTop = "PlateShadingTop.png";
+				boundFilenameBot = "PlateShadingBot.png";
+
 			}
 
 			if (Tilerandomizer > 20) {
 				fillerToChangeTwo.SetTransparency(0);
+				boundToChangeTop.SetTransparency(0);
 				fileName = "MoonStuff.png";
 				gapFillerFilename = "moon_tileset_base.png";
+
+				boundFilenameTop = "MoonShadingTop.png";
+				boundFilenameBot = "MoonShadingBot.png";
 			}
 
 			
@@ -690,6 +735,12 @@ void InfiniteRunner::KeyboardDown(){
 
 			ECS::GetComponent<Sprite>(gapFillerTwo).LoadSprite(gapFillerFilename, 500, 128 * 0.2);
 			ECS::GetComponent<Sprite>(gapFillerTwo).Draw();
+
+			boundToChangeBot.LoadSprite(boundFilenameBot,1280,384);
+			boundToChangeTop.LoadSprite(boundFilenameTop, 1280, 384);
+
+			boundToChangeBot.Draw();
+			boundToChangeTop.Draw();
 
 			backgroundToChange.LoadSprite(fileName, 1000, 175);
 			backgroundToChange.Draw();

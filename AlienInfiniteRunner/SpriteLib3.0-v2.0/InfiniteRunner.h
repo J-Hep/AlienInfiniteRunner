@@ -22,6 +22,8 @@ protected:
 	int loseStateCollision;
 	int gameoverScreen;
 	int gapFillerOne;
+	int boundFillerTop;
+	int boundFillerBot;
 	int gapFillerTwo;
 	int canisters[64];
 	int roofTiles[64];
