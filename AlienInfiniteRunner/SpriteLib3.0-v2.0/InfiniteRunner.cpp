@@ -46,6 +46,11 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::GetComponent<VerticalScroll>(entity).SetCam(&ECS::GetComponent<Camera>(entity));
 	}
 
+	//Changes scene color
+	{
+		Scene::SetClearColor(vec4(54,28,98,100));
+	}
+
 	//Player
 	{
 		//Create entity
@@ -178,16 +183,16 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 	//Setup gap filler floor
 	{
 		//Creates entity
-		auto entity = ECS::CreateEntity();
+		gapFillerOne = ECS::CreateEntity();
 
 		//Add components
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<Sprite>(gapFillerOne);
+		ECS::AttachComponent<Transform>(gapFillerOne);
 
 		//Sets up components
 		std::string fileName = "Soil.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 128*0.2);
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -7.f, 6.f));
+		ECS::GetComponent<Sprite>(gapFillerOne).LoadSprite(fileName, 500, 128*0.2);
+		ECS::GetComponent<Transform>(gapFillerOne).SetPosition(vec3(0.f, -7.f, 6.f));
 	}
 
 
@@ -229,16 +234,16 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 	//Setup gap filler roof
 	{
 		//Creates entity
-		auto entity = ECS::CreateEntity();
+		gapFillerTwo = ECS::CreateEntity();
 
 		//Add components
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<Sprite>(gapFillerTwo);
+		ECS::AttachComponent<Transform>(gapFillerTwo);
 
 		//Sets up components
 		std::string fileName = "Soil.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 128 * 0.2);
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 165.f, 6.f));
+		ECS::GetComponent<Sprite>(gapFillerTwo).LoadSprite(fileName, 500, 128 * 0.2);
+		ECS::GetComponent<Transform>(gapFillerTwo).SetPosition(vec3(0.f, 165.f, 6.f));
 	}
 
 	//Setup static tunnel Background
@@ -289,14 +294,14 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::AttachComponent<Transform>(entity);
 
 		//Sets up components
-		std::string fileName = "PlaceHolderSpace.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 1000, 1000);
+		std::string fileName = "Space3.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 2150 /2.5, 1060/2.5);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 50.f, 1.f));
 
 	}
 
 	//Setup static Background floor
-	{
+	/*{
 		//Creates entity
 		auto entity = ECS::CreateEntity();
 
@@ -309,7 +314,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 1000, 1000);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -350.f, 2.f));
 
-	}
+	}*/
 
 	//Setup game over screen
 	{
@@ -535,6 +540,7 @@ void InfiniteRunner::Update(){
 	if (player.GetPosition().x < -60) {
 		gameOverState = true;
 	}
+
 	else {
 		gameOverState = false;
 	}
@@ -544,6 +550,7 @@ void InfiniteRunner::Update(){
 		gameOverSplash.SetTransparency(1);
 
 		gameOverTransform.SetPosition(vec3(player.GetPosition().x, player.GetPosition().y,100.f));
+
 	}
 
 	if (gameOverState == false) {
@@ -583,13 +590,114 @@ void InfiniteRunner::KeyboardDown(){
 	auto& canJump = ECS::GetComponent<CanJump>(MainEntities::MainPlayer());
 	auto& alienRef = ECS::GetComponent<PhysicsBody>(alienBoss);
 
-
 	double jumpCalc = player.GetMass() * 98.f;
 	double jumpCalcAlien = alienRef.GetMass() * 98.f;
 
-	if (Input::GetKeyDown(Key::R) && gameOverState == true)
+	if (Input::GetKeyDown(Key::R) /*&& gameOverState == true*/)
 	{
 		player.SetPosition(b2Vec2(0,35));
+		
+
+		//Changing environments on reset
+		std::string fileName = "ARandomTile.png";
+		double tileSizing = 0.20;
+
+		int Tilerandomizer = rand() % 30; //0-10 is soil biome, 11-10 is corridor, 20+ is ____ biome
+		std::cout << Tilerandomizer << std::endl;
+
+		
+
+		for (int i = 0; i < tilesFor; i++) {
+			auto& roofTilesToChange = ECS::GetComponent<Sprite>(roofTiles[i]);
+			auto& floorTilesToChange = ECS::GetComponent<Sprite>(floorTiles[i]);
+
+
+			if (Tilerandomizer < 10) {
+				int randomTiling = rand() % 10;
+
+				roofTilesToChange.SetTransparency(1);
+
+				fileName = "Soil.png";
+
+				if (randomTiling > 5) {
+					fileName = "EnrichedSoil.png";
+				}
+			}
+
+			if (Tilerandomizer > 10 && Tilerandomizer < 20) {
+				int randomTiling = rand() % 10;
+
+				roofTilesToChange.SetTransparency(1);
+
+				fileName = "ARandomTile.png";
+
+				if (randomTiling < 3) {
+					fileName = "PlateWire.png";
+				}
+			}
+
+			if (Tilerandomizer > 20) {
+				int randomTiling = rand() % 10;
+
+				roofTilesToChange.SetTransparency(0);
+
+				fileName = "moon_tileset_base.png";
+
+				if (randomTiling > 5) {
+					fileName = "moon_tileset_accent.png";
+				}
+			}
+
+			roofTilesToChange.LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
+			floorTilesToChange.LoadSprite(fileName, 128 * tileSizing, 128 * tileSizing);
+
+			roofTilesToChange.Draw();
+			floorTilesToChange.Draw();
+
+		}
+
+		for (int i = 0; i < 2; i++) {
+
+			auto& backgroundToChange = ECS::GetComponent<Sprite>(backgroundTile[i]);
+			auto& fillerToChangeOne = ECS::GetComponent<Sprite>(gapFillerOne);
+			auto& fillerToChangeTwo = ECS::GetComponent<Sprite>(gapFillerTwo);
+
+			std::string fileName = "BackgroundTunnel1.png";
+			std::string gapFillerFilename = "Soil.png";
+
+			if (Tilerandomizer < 10) {
+				fillerToChangeTwo.SetTransparency(1);
+				fileName = "BackgroundTunnel1.png";
+				gapFillerFilename = "Soil.png";
+
+			}
+
+			if (Tilerandomizer > 10 && Tilerandomizer < 20) {
+				fillerToChangeTwo.SetTransparency(1);
+				fileName = "CorridorBackground.png";
+				gapFillerFilename = "ARandomTile.png";
+			}
+
+			if (Tilerandomizer > 20) {
+				fillerToChangeTwo.SetTransparency(0);
+				fileName = "MoonStuff.png";
+				gapFillerFilename = "moon_tileset_base.png";
+			}
+
+			
+			ECS::GetComponent<Sprite>(gapFillerOne).LoadSprite(gapFillerFilename, 500, 128 * 0.2);
+			ECS::GetComponent<Sprite>(gapFillerOne).Draw();
+
+			ECS::GetComponent<Sprite>(gapFillerTwo).LoadSprite(gapFillerFilename, 500, 128 * 0.2);
+			ECS::GetComponent<Sprite>(gapFillerTwo).Draw();
+
+			backgroundToChange.LoadSprite(fileName, 1000, 175);
+			backgroundToChange.Draw();
+			
+
+		}
+
+
 
 	}
 
