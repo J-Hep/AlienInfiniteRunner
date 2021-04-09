@@ -7,6 +7,7 @@ int tilesFor = 35;
 int canisterFor = 4;
 bool gameOverState = false;
 bool effectToggle = true;
+bool gameStart = false;
 
 InfiniteRunner::InfiniteRunner(std::string name) :Scene(name)
 {
@@ -80,7 +81,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		b2Body* tempBody;
 		b2BodyDef tempDef;
 		tempDef.type = b2_dynamicBody;
-		tempDef.position.Set(float32(0.f), float32(50.f));
+		tempDef.position.Set(float32(0.f), float32(500.f)); //50 to play 500 to see main menu
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
@@ -187,6 +188,41 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		b2BodyDef tempDef;
 		tempDef.type = b2_staticBody;
 		tempDef.position.Set(float32(0.f), float32(0.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(entity, tempBody, float(tempSpr.GetWidth() - shrinkX),
+			float(tempSpr.GetHeight() - shrinkY), vec2(0.f, 0.f), false, GROUND, PLAYER | ENEMY | OBJECTS | HEXAGON);
+		tempPhsBody.SetColor(vec4(0.f, 1.f, 0.f, 0.3f));
+
+	}
+
+	//Setup static Top Platform
+	{
+		//Creates entity
+		auto entity = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		//Sets up components
+		std::string fileName = "GraySquare.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 500, 10);
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 2.f));
+
+		ECS::GetComponent<Sprite>(entity).SetTransparency(0);
+
+		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		float shrinkX = 0.f;
+		float shrinkY = 0.f;
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(0.f), float32(480.f));
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
@@ -378,7 +414,7 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 
 	}
 
-	//Setup game over screen
+	//Setup Scrren effect
 	{
 		//Creates entity
 		 screenEffect = ECS::CreateEntity();
@@ -393,6 +429,24 @@ void InfiniteRunner::InitScene(float windowWidth, float windowHeight){
 		ECS::GetComponent<Transform>(screenEffect).SetPosition(vec3(0.f, 75.f, 100.f));
 
 		ECS::GetComponent<Sprite>(screenEffect).SetTransparency(0);
+
+	}
+
+	//Setup Main menu
+	{
+		//Creates entity
+		mainMenu = ECS::CreateEntity();
+
+		//Add components
+		ECS::AttachComponent<Sprite>(mainMenu);
+		ECS::AttachComponent<Transform>(mainMenu);
+
+		//Sets up components
+		std::string fileName = "NeroniteMainMenu.png";
+		ECS::GetComponent<Sprite>(mainMenu).LoadSprite(fileName, (128 * 10) / 3, (128 * 5) / 3);
+		ECS::GetComponent<Transform>(mainMenu).SetPosition(vec3(0.f, 500.f, 100.f));
+
+		//ECS::GetComponent<Sprite>(mainMenu).SetTransparency(1);
 
 	}
 
@@ -547,24 +601,24 @@ void InfiniteRunner::Update(){
 	int reAppearDistance = 575; //adjust these to line up tiles
 
 	
+	if (gameStart == true) {
+		//Random positioning of canisters
+		for (int i = 0; i < canisterFor; i++) {
+			auto& caniPhyBody = ECS::GetComponent<PhysicsBody>(canisters[i]);
+			auto& caniSprite = ECS::GetComponent<Sprite>(canisters[i]);
 
-	//Random positioning of canisters
-	for (int i = 0; i < canisterFor; i++) {
-		auto& caniPhyBody = ECS::GetComponent<PhysicsBody>(canisters[i]);
-		auto& caniSprite = ECS::GetComponent<Sprite>(canisters[i]);
-		
 
-		caniPhyBody.SetPosition(b2Vec2(caniPhyBody.GetPosition().x + canisterSpeed, caniPhyBody.GetPosition().y));
+			caniPhyBody.SetPosition(b2Vec2(caniPhyBody.GetPosition().x + canisterSpeed, caniPhyBody.GetPosition().y));
 
-		if (caniPhyBody.GetPosition().x < setBackDistance) {
+			if (caniPhyBody.GetPosition().x < setBackDistance) {
 
-			//Random position based
-			//caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 130 + 18));
-			
+				//Random position based
+				//caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 130 + 18));
 
+
+			}
 		}
 	}
-
 
 	for (int i = 0; i < tilesFor; i++)
 	{
@@ -787,7 +841,7 @@ void InfiniteRunner::KeyboardDown(){
 	}
 
 
-	if (canJump.m_canJump)
+	if (canJump.m_canJump && gameStart == true)
 	{
 		if (Input::GetKeyDown(Key::Space) || Input::GetKeyDown(Key::W) || Input::GetKeyDown(Key::UpArrow))
 		{
@@ -816,6 +870,12 @@ void InfiniteRunner::KeyboardDown(){
 		//effectToggle = false;
 	}
 	//std::cout << "Player Y location: " << player.GetPosition().y;
+
+	if (Input::GetKeyDown(Key::E)) {
+		player.SetPosition(b2Vec2(0, 35));
+		gameStart = true;
+	}
+
 
 }
 

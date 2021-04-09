@@ -25,6 +25,7 @@ protected:
 	int boundFillerTop;
 	int boundFillerBot;
 	int screenEffect;
+	int mainMenu;
 	int gapFillerTwo;
 	int canisters[64];
 	int roofTiles[64];
