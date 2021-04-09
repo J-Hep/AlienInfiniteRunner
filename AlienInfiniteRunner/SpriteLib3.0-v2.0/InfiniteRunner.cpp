@@ -600,6 +600,8 @@ void InfiniteRunner::Update(){
 	int setBackDistance = -300; //Adjusdt these to line up tiles -0.25f
 	int reAppearDistance = 575; //adjust these to line up tiles
 
+	int canisterSetBack = -250;
+	int canisterReappear = 300;
 	
 	if (gameStart == true) {
 		//Random positioning of canisters
@@ -610,11 +612,23 @@ void InfiniteRunner::Update(){
 
 			caniPhyBody.SetPosition(b2Vec2(caniPhyBody.GetPosition().x + canisterSpeed, caniPhyBody.GetPosition().y));
 
-			if (caniPhyBody.GetPosition().x < setBackDistance) {
+			if (caniPhyBody.GetPosition().x < canisterSetBack) {
 
 				//Random position based
 				//caniPhyBody.SetPosition(b2Vec2(reAppearDistance + canisterSpeed, rand()% 130 + 18));
 
+				int randomCanister = rand()% 20;
+				//std::cout << randomCanister<<std::endl;
+
+				//Only 1 to jump over
+				if (randomCanister <= 10) {
+					caniPhyBody.SetPosition(b2Vec2(canisterReappear + canisterSpeed, 20));
+				}
+
+				//Pillar gap at top
+				if (randomCanister > 10 && randomCanister <= 20) {
+					caniPhyBody.SetPosition(b2Vec2(canisterReappear + canisterSpeed, 20 + ((128 * 0.22) * i)));
+				}
 
 			}
 		}
